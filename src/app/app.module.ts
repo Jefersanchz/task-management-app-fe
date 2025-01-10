@@ -3,6 +3,11 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { CoreModule } from './core/core.module';
+import { AuthModule } from './features/auth/auth.module';
+import { BoardsModule } from './features/boards/boards.module';
+import { SharedModule } from './features/shared/shared.module';
+import { StoreModule } from './store/store.module';
 
 @NgModule({
   declarations: [
@@ -10,7 +15,12 @@ import { AppComponent } from './app.component';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    CoreModule,
+    AuthModule,
+    BoardsModule,
+    SharedModule,
+    StoreModule
   ],
   providers: [],
   bootstrap: [AppComponent]
