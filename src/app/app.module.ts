@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -20,7 +21,8 @@ import { StoreModule } from './store/store.module';
     AuthModule,
     BoardsModule,
     SharedModule,
-    StoreModule
+    StoreModule,
+    DragDropModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

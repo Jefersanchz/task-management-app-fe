@@ -1,0 +1,90 @@
+<nav class="bg-blue-300 text-gray-800 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <div class="flex-shrink-0">
+          <a href="#" class="text-lg font-bold">MiLogo</a>
+        </div>
+  
+        <!-- Navbar Links -->
+        <div class="hidden md:flex space-x-4">
+          <a href="#" class="hover:text-gray-300">Inicio</a>
+          <a href="#" class="hover:text-gray-300">Servicios</a>
+          <a href="#" class="hover:text-gray-300">Contacto</a>
+        </div>
+  
+        <!-- User Dropdown -->
+        <div class="relative">
+          <button
+            class="flex items-center space-x-2 focus:outline-none"
+            (click)="toggleDropdown()"
+          >
+            <span>Usuario</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-5 h-5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 9l6 6 6-6"
+              />
+            </svg>
+          </button>
+          <div
+            *ngIf="isDropdownOpen"
+            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-10"
+          >
+            <a
+              href="#"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >Perfil</a
+            >
+            <a
+              href="#"
+              class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >Cerrar sesión</a
+            >
+          </div>
+        </div>
+  
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden">
+          <button
+            class="text-gray-200 hover:text-white focus:outline-none"
+            (click)="toggleMobileMenu()"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-6 h-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3.75 5h16.5m-16.5 7h16.5m-16.5 7h16.5"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Mobile Menu -->
+    <div
+      *ngIf="isMobileMenuOpen"
+      class="md:hidden bg-blue-500 text-white py-2 space-y-2 px-4"
+    >
+      <a href="#" class="block">Inicio</a>
+      <a href="#" class="block">Servicios</a>
+      <a href="#" class="block">Contacto</a>
+    </div>
+  </nav>
+  

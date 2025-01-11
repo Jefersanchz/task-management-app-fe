@@ -1,0 +1,6 @@
+<div class="flex items-center justify-center min-h-screen bg-gray-100">
+    <!-- Mostrar Login o Register según el valor de showLogin -->
+    <app-login *ngIf="showLogin" (switchToRegister)="onSwitchToRegister()"></app-login>  <!-- Mostrar Login -->
+    <app-register *ngIf="!showLogin" (switchToLogin)="onSwitchToLogin()"></app-register>  <!-- Mostrar Register -->
+  </div>
+  

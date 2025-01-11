@@ -1,0 +1,26 @@
+<div class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="w-full max-w-sm p-8 bg-white rounded-lg shadow-lg">
+      <h2 class="text-2xl font-semibold text-center text-gray-700 mb-6">Iniciar sesión</h2>
+      <form (ngSubmit)="login()">
+        <div class="mb-4">
+          <label for="username" class="block text-sm font-medium text-gray-600">Usuario</label>
+          <input id="username" type="text" [(ngModel)]="username" name="username" 
+                 class="mt-2 w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+        </div>
+        <div class="mb-6">
+          <label for="password" class="block text-sm font-medium text-gray-600">Contraseña</label>
+          <input id="password" type="password" [(ngModel)]="password" name="password" 
+                 class="mt-2 w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+        </div>
+        <button type="submit" 
+                class="w-full p-3 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-700 disabled:bg-blue-300" 
+                [disabled]="!username || !password">Iniciar sesión</button>
+      </form>
+      <div class="mt-4 text-center">
+        <p class="text-sm text-gray-600">¿No tienes cuenta? 
+          <a href="javascript:void(0)" (click)="goToRegister()" class="text-blue-600 hover:underline">Regístrate</a>
+        </p>
+      </div>
+    </div>
+  </div>
+  
