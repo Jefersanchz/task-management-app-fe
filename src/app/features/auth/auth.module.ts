@@ -5,6 +5,7 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AuthRoutingModule } from './auth-routing.module';
 import { AuthPageComponent } from './pages/auth-page/auth-page.component';
+import { HttpClientModule } from '@angular/common/http';  // Importa HttpClientModule
 
 @NgModule({
   declarations: [
@@ -17,6 +18,7 @@ import { AuthPageComponent } from './pages/auth-page/auth-page.component';
     AuthRoutingModule,
     CommonModule,
     FormsModule,  // Asegúrate de agregar FormsModule aquí
+    HttpClientModule
    
   ]
 })

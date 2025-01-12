@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuthPageComponent } from './features/auth/pages/auth-page/auth-page.component';  // Asegúrate de importar el componente correcto
 import { BoardListComponent } from './features/boards/pages/board-list/board-list.component';  // Importa BoardListComponent
 import { BoardDetailComponent } from './features/boards/pages/board-detail/board-detail.component';  // Importa BoardDetailComponent
+import { AuthGuard } from './guards/auth.guard'; // Importa AuthGuard
 
 const routes: Routes = [
   {
@@ -15,12 +16,14 @@ const routes: Routes = [
     component: AuthPageComponent  // El componente correcto para la página de autenticación
   },
   {
-    path: 'boards',  // Ruta para la lista de tableros
-    component: BoardListComponent
+    path: 'boards',
+    component: BoardListComponent,
+    canActivate: [AuthGuard] // Protege esta ruta
   },
   {
-    path: 'boards/:id',  // Ruta para ver el detalle de un tablero
-    component: BoardDetailComponent
+    path: 'boards/:id',
+    component: BoardDetailComponent,
+    canActivate: [AuthGuard] // Protege esta ruta
   },
   // Otras rutas que quieras agregar
 ];

@@ -1,69 +1,164 @@
+
+<app-navbar></app-navbar>
 <!-- Modal para Agregar Tarea -->
 <div *ngIf="isModalOpen" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
   <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-    <h3 class="text-2xl font-semibold mb-4">Agregar Nueva Tarea</h3>
-    <form (ngSubmit)="addTask()">
+    <h3 class="text-2xl font-semibold mb-4">
+      {{ isEditing ? 'Editar Tarea' : 'Agregar Nueva Tarea' }}
+    </h3>
+    <form (ngSubmit)="isEditing ? updateTask() : createTask()">
+      <!-- Selección de columna -->
+      <div class="mb-4" *ngIf="!isEditing">
+        <label for="column" class="block text-sm font-medium text-gray-700">Selecciona la Columna</label>
+        <select
+          id="column"
+          [(ngModel)]="currentTask.columnId"
+          name="columnId"
+          class="w-full p-2 mt-2 border rounded-md shadow-sm"
+          required
+        >
+          <option *ngFor="let column of columns" [value]="column.id">{{ column.name }}</option>
+        </select>
+      </div>
+
+      <!-- Título de la tarea -->
       <div class="mb-4">
         <label for="taskTitle" class="block text-sm font-medium text-gray-700">Título de la Tarea</label>
-        <input id="taskTitle" [(ngModel)]="newTask.title" name="title" class="w-full p-2 mt-2 border rounded-md shadow-sm" required>
+        <input
+          id="taskTitle"
+          [(ngModel)]="currentTask.title"
+          name="title"
+          class="w-full p-2 mt-2 border rounded-md shadow-sm"
+          required
+        />
       </div>
+
+      <!-- Descripción de la tarea -->
       <div class="mb-4">
         <label for="taskDescription" class="block text-sm font-medium text-gray-700">Descripción</label>
-        <textarea id="taskDescription" [(ngModel)]="newTask.description" name="description" class="w-full p-2 mt-2 border rounded-md shadow-sm" required></textarea>
+        <textarea
+          id="taskDescription"
+          [(ngModel)]="currentTask.description"
+          name="description"
+          class="w-full p-2 mt-2 border rounded-md shadow-sm"
+          required
+        ></textarea>
       </div>
+
+      <!-- Botones -->
       <div class="flex justify-between items-center">
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">Agregar</button>
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+          {{ isEditing ? 'Guardar Cambios' : 'Agregar' }}
+        </button>
         <button type="button" (click)="closeModal()" class="text-red-600 hover:text-red-800">Cancelar</button>
       </div>
     </form>
   </div>
 </div>
 
+
+<div *ngIf="isColumnModalOpen" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
+  <div class="bg-white p-6 rounded-lg shadow-lg">
+    <h3 class="text-xl font-semibold mb-4">Agregar Columna</h3>
+    <form (ngSubmit)="addColumn()">
+      <input
+        [(ngModel)]="newColumn.name"
+        name="columnName"
+        class="w-full p-2 border border-gray-300 rounded-lg mb-4"
+        placeholder="Nombre de la columna"
+        required
+      />
+      <div class="flex justify-end space-x-4">
+        <button
+          type="button"
+          (click)="closeColumnModal()"
+          class="bg-red-500 text-white px-4 py-2 rounded-lg"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="bg-green-500 text-white px-4 py-2 rounded-lg"
+        >
+          Crear
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 <!-- Contenido principal -->
 <div class="container mx-auto p-6">
   <div class="flex justify-between items-center mb-6">
     <h2 class="text-3xl font-semibold text-gray-700">{{ board.name }}</h2>
-    <button
-      class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition-all duration-200"
-      title="Agregar Tarea"
-      (click)="openAddTaskForm()"
-    >
-      <i class="fas fa-plus-circle mr-2"></i> Agregar Tarea
-    </button>
-  </div>
+    
+    <!-- Contenedor de los botones -->
+    <div class="flex space-x-4">
+      <!-- Botón Agregar Tarea -->
+      <button
+        class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition-all duration-200"
+        title="Agregar Tarea"
+        (click)="openAddTaskModal()"
+      >
+        <i class="fas fa-plus-circle mr-2"></i> Agregar Tarea
+      </button>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div *ngFor="let column of board.columns" 
-         cdkDropList 
-         [cdkDropListData]="column.tasks"
-         class="bg-gray-50 p-4 rounded-lg shadow-lg">
-      <h3 class="text-xl font-semibold text-gray-700">{{ column.name }}</h3>
-      <div class="mt-4">
-        <div *ngFor="let task of column.tasks" 
-             cdkDrag 
-             class="bg-white p-3 rounded-md shadow-md mb-4">
-          <h4 class="font-medium text-gray-700">{{ task.title }}</h4>
-          <p class="text-sm text-gray-500">{{ task.description }}</p>
-  
-          <!-- Botón de Eliminar Tarea -->
-          <button
-            class="text-red-600 hover:text-red-800 p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-            (click)="deleteTask(column, task)"
-            title="Eliminar Tarea"
-          >
-            <i class="fas fa-trash-alt text-lg"></i>
-          </button>
-  
-          <!-- Botón de Mover Tarea -->
-          <button
-            class="text-blue-600 hover:text-blue-800 p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-            (click)="drop(column, column, task)" 
-            title="Mover Tarea"
-          >
-            <i class="fas fa-arrows-alt text-lg"></i>
-          </button>
-        </div>
+      <!-- Botón Agregar Columna -->
+      <button
+        class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-200"
+        title="Agregar Columna"
+        (click)="openAddColumnForm()"
+      >
+        <i class="fas fa-plus-circle mr-2"></i> Agregar Columna
+      </button>
+    </div>
+  </div>
+  <div class="min-h-screen grid gap-6"
+     [ngClass]="{
+        'grid-cols-1': board.columns.length <= 1,
+        'grid-cols-2': board.columns.length === 2,
+        'grid-cols-3': board.columns.length >= 3,
+        'grid-cols-4': board.columns.length >= 4,
+        'grid-cols-5': board.columns.length >= 5,
+        'grid-cols-6': board.columns.length >= 6
+     }">
+  <div *ngFor="let column of board.columns" 
+       cdkDropList 
+       [cdkDropListData]="column.tasks"
+       (cdkDropListDropped)="onDrop($event, column)"  
+       class="bg-gray-50 p-4 rounded-lg shadow-lg h-full">
+    <h3 class="text-xl font-semibold text-gray-700">{{ column.name }}</h3>
+    <div class="mt-4 h-full flex flex-col">
+      <div *ngFor="let task of column.tasks" 
+           cdkDrag 
+           class="bg-white p-3 rounded-md shadow-md mb-4">
+        <h4 class="font-medium text-gray-700">{{ task.title }}</h4>
+        <p class="text-sm text-gray-500">{{ task.description }}</p>
+
+        <!-- Botón de Eliminar Tarea -->
+        <button
+          class="text-red-600 hover:text-red-800 p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+          (click)="deleteTask(task)"
+          title="Eliminar Tarea">
+          <i class="fas fa-trash-alt text-lg"></i>
+        </button>
+
+
+        <!-- Botón de Mover Tarea -->
+        <button
+          class="text-blue-600 hover:text-blue-800 p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+          (click)="drop(column, getNextColumn(column), task)"
+          title="Mover Tarea">
+          <i class="fas fa-arrows-alt text-lg"></i>
+        </button>
+
+        <!-- Botón de Editar Tarea -->
+        <button
+        class="text-green-600 hover:text-green-800 p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+        (click)="editTask(column, task)"
+        title="Editar Tarea">
+        <i class="fas fa-edit text-lg"></i>
+      </button>
       </div>
     </div>
   </div>
-  
+</div>

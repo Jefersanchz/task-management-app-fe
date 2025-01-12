@@ -1,37 +1,52 @@
-// boards.service.ts
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http'; // Importa HttpClient
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BoardsService {
 
-  constructor() { }
+  private apiUrl = 'http://localhost:9000';  // La URL base de la API en tu entorno local
+
+  constructor(private http: HttpClient) { }
+
+  // Método para obtener un tablero por su ID
   getBoardById(boardId: string): Observable<any> {
-    // Aquí deberías hacer una llamada a una API o a un archivo JSON
-    // Para simplificar, vamos a devolver un ejemplo estático
-    const board = {
-      id: boardId,
-      name: 'Tablero de Ejemplo',
-      columns: [
-        { name: 'Por hacer', tasks: [{ title: 'Tarea 1', description: 'Descripción de la tarea' }] },
-        { name: 'En progreso', tasks: [{ title: 'Tarea 2', description: 'Descripción de la tarea' }] },
-        { name: 'Completado', tasks: [{ title: 'Tarea 3', description: 'Descripción de la tarea' }] }
-      ]
-    };
-    return of(board);  // Simula la respuesta de un servidor
+    return this.http.get<any>(`${this.apiUrl}/api/boards/${boardId}`);
   }
 
-  // Ejemplo de método que devuelve una lista de tableros
-  getBoards(): Observable<any[]> {
-    // Aquí deberías hacer una llamada a una API o a un archivo JSON
-    // Para fines de demostración, devolvemos una lista estática de tableros
-    const boards = [
-      { id: 1, name: 'Tablero 1', description: 'Descripción del tablero 1' },
-      { id: 2, name: 'Tablero 2', description: 'Descripción del tablero 2' },
-      { id: 3, name: 'Tablero 3', description: 'Descripción del tablero 3' }
-    ];
-    return of(boards);  // Simula la respuesta de un servidor
+  // Método para obtener todos los tableros de un propietario
+  getBoards(ownerId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/api/boards/${ownerId}`);
+  }
+
+  // Método para crear un nuevo tablero
+  createBoard(ownerId: string, boardData: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/boards/create/${ownerId}`, boardData);
+  }
+  createColumn(boardId: string, column: { name: string; position: number }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/api/columns/create/${boardId}`, column);
+  }
+  getColumns(boardId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/api/columns/${boardId}`);
+  }
+  deleteBoard(boardId: string, ownerId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/api/boards/delete/${boardId}/${ownerId}`);
+  }
+  createTask(columnId: string, taskData: { title: string, description: string }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/tasks/create/${columnId}`, taskData);
+  }
+  
+  getAllTasks(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/api/tasks/all`);
+  }
+  updateTask(taskId: string, taskData: { title: string, description: string }): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/api/tasks/update/${taskId}`, taskData);
+  }
+
+  // Eliminar tarea
+  deleteTask(taskId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/api/tasks/delete/${taskId}`);
   }
 }
