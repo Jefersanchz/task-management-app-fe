@@ -1,0 +1,51 @@
+<div *ngIf="isModalOpen" class="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h3 class="text-2xl font-semibold mb-4">
+        {{ isEditing ? 'Editar Tarea' : 'Agregar Nueva Tarea' }}
+      </h3>
+      <form (ngSubmit)="onSubmit()">
+        <div class="mb-4" *ngIf="!isEditing">
+          <label for="column" class="block text-sm font-medium text-gray-700">Selecciona la Columna</label>
+          <select
+            id="column"
+            [(ngModel)]="currentTask.columnId"
+            name="columnId"
+            class="w-full p-2 mt-2 border rounded-md shadow-sm"
+            required
+          >
+            <option *ngFor="let column of columns" [value]="column.id">{{ column.name }}</option>
+          </select>
+        </div>
+  
+        <div class="mb-4">
+          <label for="taskTitle" class="block text-sm font-medium text-gray-700">Título de la Tarea</label>
+          <input
+            id="taskTitle"
+            [(ngModel)]="currentTask.title"
+            name="title"
+            class="w-full p-2 mt-2 border rounded-md shadow-sm"
+            required
+          />
+        </div>
+  
+        <div class="mb-4">
+          <label for="taskDescription" class="block text-sm font-medium text-gray-700">Descripción</label>
+          <textarea
+            id="taskDescription"
+            [(ngModel)]="currentTask.description"
+            name="description"
+            class="w-full p-2 mt-2 border rounded-md shadow-sm"
+            required
+          ></textarea>
+        </div>
+  
+        <div class="flex justify-between items-center">
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+            {{ isEditing ? 'Guardar Cambios' : 'Agregar' }}
+          </button>
+          <button type="button" (click)="closeModal.emit()" class="text-red-600 hover:text-red-800">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  

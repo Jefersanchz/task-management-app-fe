@@ -1,6 +1,5 @@
-// board-list.component.ts
-import { Component, OnInit } from '@angular/core';
-import { BoardsService } from '../../services/boards.service';  // Asegúrate de importar el servicio
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { BoardsService } from '../../services/boards.service';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 
@@ -12,15 +11,18 @@ import Swal from 'sweetalert2';
 export class BoardListComponent implements OnInit {
   boards: any[] = [];
   isModalOpen: boolean = false;
-  newBoard = { name: '', description: '', ownerId: 1 }; // Puedes adaptar `ownerId` según sea necesario
+  newBoard = { name: '', description: '', ownerId: 1 };
 
-  constructor(private boardsService: BoardsService, private router: Router) {}
-  
+  constructor(
+    private boardsService: BoardsService,
+    private router: Router,
+    private cdr: ChangeDetectorRef  
+  ) {}
+
   ngOnInit(): void {
-    // Pasar ownerId al llamar al servicio
-    this.loadBoards();  // Llamamos al método loadBoards para cargar los tableros al iniciar
+    this.loadBoards();
   }
-  
+
   loadBoards(): void {
     this.boardsService.getBoards(this.newBoard.ownerId.toString()).subscribe((boards: any[]) => {
       this.boards = boards;
@@ -29,35 +31,47 @@ export class BoardListComponent implements OnInit {
 
   openModal() {
     this.isModalOpen = true;
+    console.log('Modal abierto:', this.isModalOpen); 
+    this.cdr.detectChanges(); 
   }
 
   closeModal() {
     this.isModalOpen = false;
   }
 
-  onSubmit() {
-    if (this.newBoard.name && this.newBoard.description) {
-      this.boardsService.createBoard(this.newBoard.ownerId.toString(), this.newBoard).subscribe((newBoard: any) => {
-        // Agregar el nuevo tablero a la lista
-        this.boards.push(newBoard);
-  
-        // Limpiar el formulario
-        this.newBoard = { name: '', description: '', ownerId: 1 }; // Restablecer los campos del formulario
-  
-        // Cerrar el modal
-        this.closeModal();
-      });
-    }
+  onBoardCreated(board: any) {
+    this.boardsService.createBoard(board.ownerId.toString(), board).subscribe((newBoard: any) => {
+      this.boards.push(newBoard);
+      this.closeModal();
+    });
   }
 
   redirectToBoardDetail(boardId: string) {
     this.router.navigate([`/board/${boardId}`]);
   }
 
-  deleteBoard(boardId: string): void {
-    const ownerId = '1'; // Aquí debes tomar el ID del propietario, puedes obtenerlo de tu aplicación
+  exportBoardAsJson(board: any): void {
+    const ownerId = board.ownerId.toString();
+    this.boardsService.exportBoardAsJson(ownerId).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${board.name}-tablero.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error('Error al exportar el tablero:', error);
+        Swal.fire('Error', 'Hubo un problema al exportar el tablero.', 'error');
+      }
+    });
+  }
   
-    // Muestra la alerta de confirmación
+  deleteBoard(boardId: string): void {
+    const ownerId = '1';
     Swal.fire({
       title: '¿Estás seguro?',
       text: 'Este tablero será eliminado permanentemente!',
@@ -68,14 +82,10 @@ export class BoardListComponent implements OnInit {
       reverseButtons: true
     }).then((result) => {
       if (result.isConfirmed) {
-        // Si el usuario confirma, realiza la eliminación
         this.boardsService.deleteBoard(boardId, ownerId).subscribe({
           next: () => {
-            // Muestra un mensaje de éxito
             Swal.fire('Eliminado!', 'El tablero ha sido eliminado.', 'success');
-            
-            // Aquí se vuelve a cargar la lista de tableros después de la eliminación
-            this.loadBoards();  // Actualizamos la lista de tableros
+            this.loadBoards();
           },
           error: (error) => {
             Swal.fire('Error', 'Hubo un problema al eliminar el tablero.', 'error');
@@ -83,7 +93,6 @@ export class BoardListComponent implements OnInit {
           }
         });
       } else {
-        // Si el usuario cancela, muestra un mensaje de cancelación
         Swal.fire('Cancelado', 'La eliminación del tablero fue cancelada.', 'info');
       }
     });

@@ -9,6 +9,9 @@ import { DragDropDirective } from './components/drag-drop.directive';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { FormsModule } from '@angular/forms';  // Asegúrate de importar FormsModule
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { ModalBoardComponent } from './components/modal-board/modal-board.component';
+import { TaskModalComponent } from './components/task-modal/task-modal.component';
+import { ColumnModalComponent } from './components/column-modal/column-modal.component';
 
 @NgModule({
   declarations: [
@@ -18,6 +21,9 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     TaskCardComponent,
     DragDropDirective,
     NavbarComponent,
+    ModalBoardComponent,
+    TaskModalComponent,
+    ColumnModalComponent,
   ],
   imports: [CommonModule, BoardsRoutingModule,FormsModule,DragDropModule,
   ],

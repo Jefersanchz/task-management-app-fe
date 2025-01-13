@@ -1,16 +1,17 @@
-<nav class="bg-blue-300 text-gray-800 shadow-md" style="font-family: 'Poppins', sans-serif;">
+<nav class="bg-purple-900 text-white shadow-md" style="font-family: 'Poppins', sans-serif;">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <!-- Logo -->
         <div class="flex-shrink-0">
-          <a href="#" class="text-lg font-bold">MiLogo</a>
+          <a href="#">
+            <img src="../../../../../assets/images/logo (3).jpeg" alt="Mi Logo" class="h-14 w-14 rounded-full"> <!-- Tamaño reducido y redondeado -->
+          </a>
         </div>
-  
+        
         <!-- Navbar Links -->
         <div class="hidden md:flex space-x-4">
           <a href="/boards" class="hover:text-gray-300">Inicio</a>
-          <a href="#" class="hover:text-gray-300">Servicios</a>
-          <a href="#" class="hover:text-gray-300">Contacto</a>
+  
         </div>
   
         <!-- User Dropdown -->
@@ -81,12 +82,11 @@
   
     <!-- Mobile Menu -->
     <div
-      *ngIf="isMobileMenuOpen"
-      class="md:hidden bg-blue-500 text-white py-2 space-y-2 px-4"
-    >
-      <a href="#" class="block">Inicio</a>
-      <a href="#" class="block">Servicios</a>
-      <a href="#" class="block">Contacto</a>
-    </div>
+    *ngIf="isMobileMenuOpen"
+    class="bg-purple-900 text-white shadow-md py-2 space-y-2 px-4 text-center"
+  >
+    <a href="/boards" class="block">Inicio</a>
+  </div>
+  
   </nav>
   

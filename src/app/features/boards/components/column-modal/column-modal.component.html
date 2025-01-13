@@ -1,0 +1,30 @@
+<div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+      <h3 class="text-xl font-semibold mb-4">Agregar Columna</h3>
+      <form (ngSubmit)="addColumn()">
+        <input
+          [(ngModel)]="newColumn.name"
+          name="columnName"
+          class="w-full p-2 border border-gray-300 rounded-lg mb-4"
+          placeholder="Nombre de la columna"
+          required
+        />
+        <div class="flex justify-end space-x-4">
+          <button
+            type="button"
+            (click)="closeColumnModal()"
+            class="bg-red-500 text-white px-4 py-2 rounded-lg"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="bg-green-500 text-white px-4 py-2 rounded-lg"
+          >
+            Crear
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
