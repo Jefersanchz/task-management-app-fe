@@ -7,5 +7,5 @@ import { Component, Input } from '@angular/core';
   styleUrls: ['./task-card.component.css']
 })
 export class TaskCardComponent {
-  @Input() task!: { title: string, description: string };  // Asegúrate de que task sea un @Input()
+  @Input() task!: { title: string, description: string };  // @Input() task
 }

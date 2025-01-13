@@ -21,6 +21,5 @@ export class DragDropDirective {
   onDrop(event: DragEvent): void {
     event.preventDefault();
     const draggedElementId = event.dataTransfer?.getData('text/plain');
-    // Aquí puedes agregar la lógica para reorganizar las tareas
   }
 }

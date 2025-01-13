@@ -16,7 +16,7 @@ interface Task {
 interface Column {
   id: string;
   name: string;
-  tasks: Task[];  // Asegúrate de que tasks sea un array de tipo Task
+  tasks: Task[];  //  tasks array de tipo Task
 }
 
 @Component({

@@ -47,7 +47,7 @@ export class LoginComponent {
             confirmButtonText: 'Aceptar'
           });
   
-          // También puedes asignar un mensaje de error al formulario si es necesario
+          // Asignar un mensaje de error al formulario si es necesario
           this.errorMessage = 'Credenciales incorrectas. Inténtalo de nuevo.';
         }
       );
