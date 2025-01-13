@@ -11,28 +11,37 @@ import Swal from 'sweetalert2';
 export class BoardListComponent implements OnInit {
   boards: any[] = [];
   isModalOpen: boolean = false;
-  newBoard = { name: '', description: '', ownerId: 1 };
+  currentOwnerId!: string; // ID dinámico del usuario actual
 
   constructor(
     private boardsService: BoardsService,
     private router: Router,
-    private cdr: ChangeDetectorRef  
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.loadBoards();
+    // Obtén el ownerId desde el localStorage al inicializar el componente
+    const userData = localStorage.getItem('user'); // Clave del localStorage
+    if (userData) {
+      const user = JSON.parse(userData);
+      this.currentOwnerId = user.id; // Extrae el id del usuario
+      this.loadBoards();
+    } else {
+      console.error('No se encontró la información del usuario en el localStorage.');
+      Swal.fire('Error', 'No se encontró información del usuario.', 'error');
+    }
   }
 
   loadBoards(): void {
-    this.boardsService.getBoards(this.newBoard.ownerId.toString()).subscribe((boards: any[]) => {
+    this.boardsService.getBoards(this.currentOwnerId).subscribe((boards: any[]) => {
       this.boards = boards;
     });
   }
 
   openModal() {
     this.isModalOpen = true;
-    console.log('Modal abierto:', this.isModalOpen); 
-    this.cdr.detectChanges(); 
+    console.log('Modal abierto:', this.isModalOpen);
+    this.cdr.detectChanges();
   }
 
   closeModal() {
@@ -40,7 +49,9 @@ export class BoardListComponent implements OnInit {
   }
 
   onBoardCreated(board: any) {
-    this.boardsService.createBoard(board.ownerId.toString(), board).subscribe((newBoard: any) => {
+    // Asegúrate de que el ownerId es el del usuario actual
+    board.ownerId = this.currentOwnerId;
+    this.boardsService.createBoard(board.ownerId, board).subscribe((newBoard: any) => {
       this.boards.push(newBoard);
       this.closeModal();
     });
@@ -51,7 +62,7 @@ export class BoardListComponent implements OnInit {
   }
 
   exportBoardAsJson(board: any): void {
-    const ownerId = board.ownerId.toString();
+    const ownerId = this.currentOwnerId;
     this.boardsService.exportBoardAsJson(ownerId).subscribe({
       next: (blob: Blob) => {
         const url = window.URL.createObjectURL(blob);
@@ -69,9 +80,9 @@ export class BoardListComponent implements OnInit {
       }
     });
   }
-  
+
   deleteBoard(boardId: string): void {
-    const ownerId = '1';
+    const ownerId = this.currentOwnerId;
     Swal.fire({
       title: '¿Estás seguro?',
       text: 'Este tablero será eliminado permanentemente!',
