@@ -1,0 +1,5 @@
+.cdk-drop-list {
+    border: 1px dashed red;  /* Agrega un borde visual para asegurarte de que los contenedores son visibles */
+    min-height: 200px;         /* Asegura que las columnas tengan suficiente espacio */
+  }
+  

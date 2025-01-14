@@ -30,6 +30,7 @@ editedTask: any = {};
 selectedColumn: any = {}; 
 searchQuery: string = '';
 searchStatus: string = '';
+connectedColumns: string[] = []; // Aquí guardaremos los valores de conexión de las columnas
 
   board: { name: string, columns: Column[] } = { name: '', columns: [] };
   isModalOpen = false;
@@ -41,6 +42,9 @@ searchStatus: string = '';
     description: '',
     columnId: null,
   };
+  moveTaskModalVisible = false;
+  taskToMove: Task | null = null;
+  selectedColumnId: string = '';
     isColumnModalOpen = false;
   newColumn: { name: string; position: number } = { name: '', position: 0 }; 
   taskTitle: string = '';
@@ -52,10 +56,8 @@ searchStatus: string = '';
     private cdr: ChangeDetectorRef 
   ) {}
   
-
   ngOnInit(): void {
     const boardId = this.route.snapshot.paramMap.get('id');
-
     if (boardId) {
       this.boardsService.getBoardById(boardId).subscribe({
         next: (board) => {
@@ -70,41 +72,51 @@ searchStatus: string = '';
       this.router.navigate(['/boards']);
     }
   }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['board']) {
-    }
-  }
+  
   loadColumns(boardId: string): void {
     this.boardsService.getColumns(boardId).subscribe({
       next: (columns) => {
-        this.board.columns = columns.map((column) => ({
-          ...column,
-          tasks: [] 
-        }));
+        console.log('Columnas cargadas:', columns);
+        this.board.columns = columns;
         this.columns = [...columns];
-        this.loadAllTasks();
+
+        // Convertir los IDs de las columnas a cadenas para ser usados en connectedColumns
+        this.connectedColumns = this.columns.map(c => c.id.toString());
+        
+        // Llamar a la función para verificar connectedColumns
+        this.checkConnectedColumns();
+
+        // Asegúrate de que los cambios en las columnas se detecten
+        if (this.connectedColumns.length > 0) {
+          this.cdr.detectChanges();
+        }
       },
       error: (error) => {
         console.error('Error al cargar las columnas:', error);
       }
     });
   }
-  
-  loadAllTasks(): void {
-    this.boardsService.getAllTasks().subscribe({
-      next: (tasks) => {
-        this.board.columns.forEach((column) => {
-          column.tasks = tasks.filter((task) => task.columnId === column.id);
-        });
-  
-        this.allTasks = tasks;  
-      },
-      error: (error) => {
-        console.error('Error al cargar las tareas:', error);
-      }
-    });
+
+  // Función para verificar y mostrar el contenido de connectedColumns
+  checkConnectedColumns(): void {
+    console.log('Columnas conectadas en checkConnectedColumns:', this.connectedColumns);
   }
+  onDropListEnter(event: any): void {
+    console.log('cdkDropListConnectedTo está conectado a:', this.connectedColumns);
+    console.log('Evento recibido en onDropListEnter:', event);
+  }
+  
+  
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['board']) {
+    }
+  }
+ 
+  
+  
+
+  
   editTask(column: any, task: Task): void {
     this.isModalOpen = true; 
     this.isEditing = true; 
@@ -164,7 +176,78 @@ searchStatus: string = '';
   closeModal(): void {
     this.isModalOpen = false;
   }
+  promptMoveTask(column: Column, task: Task) {
+    console.log('Iniciando mover tarea...');
+    console.log('Columna actual:', column);
+    console.log('Tarea a mover:', task);
+  
+    this.taskToMove = task;
+    this.selectedColumnId = column.id; // Preselecciona la columna actual
+    this.moveTaskModalVisible = true;
+  
+    console.log('Modal de mover tarea visible:', this.moveTaskModalVisible);
+    console.log('Columna preseleccionada:', this.selectedColumnId);
+  }
 
+  cancelMoveTask() {
+    this.moveTaskModalVisible = false;
+    this.taskToMove = null;
+    this.selectedColumnId = '';
+  }
+  confirmMoveTask() {
+    console.log('Confirmando mover tarea...');
+    console.log('Tarea a mover:', this.taskToMove);
+    console.log('Columna destino seleccionada:', this.selectedColumnId);
+  
+    if (this.taskToMove && this.selectedColumnId) {
+      const currentColumn = this.columns.find(col => col.tasks.includes(this.taskToMove));
+      const targetColumn = this.columns.find(col => col.id === Number(this.selectedColumnId)); // Conversión a número
+  
+      console.log('Columna actual encontrada:', currentColumn);
+      console.log('Columna destino encontrada:', targetColumn);
+  
+      if (currentColumn && targetColumn && currentColumn !== targetColumn) {
+        console.log('Moviendo tarea...');
+  
+        // Llamada al servicio para actualizar la tarea en el backend
+        this.boardsService.updateTask(this.taskToMove.id.toString(), {
+          ...this.taskToMove,
+          columnId: targetColumn.id // Actualiza el ID de la columna
+        }).subscribe(
+          (response) => {
+            // Actualización exitosa en el backend
+            console.log('Tarea actualizada en el backend:', response);
+  
+            // Actualización local
+            currentColumn.tasks = currentColumn.tasks.filter((task: Task) => task !== this.taskToMove);
+            targetColumn.tasks.push(response); // Usa la respuesta del backend para la tarea actualizada
+  
+            console.log(`Tarea movida a la columna: ${targetColumn.name}`);
+  
+            // Llamada al método loadColumns después de mover la tarea
+            const boardId = this.route.snapshot.paramMap.get('id'); // Obtén el boardId de la URL
+            if (boardId) {
+              this.loadColumns(boardId); // Pasa el boardId a loadColumns
+            }
+  
+          },
+          (error) => {
+            // Manejo de errores
+            console.error('Error al mover la tarea en el backend:', error);
+          }
+        );
+      } else {
+        console.log('No se pudo mover la tarea. Verifica las columnas.');
+      }
+    } else {
+      console.log('Datos insuficientes para mover la tarea.');
+    }
+  
+    this.cancelMoveTask(); // Cierra el modal después de mover
+  }
+  
+  
+  
 createTask(task: Task): void {
   if (!task.title || !task.description || !task.columnId) {
     Swal.fire('Error', 'Por favor, ingresa un título, una descripción y selecciona una columna para la tarea.', 'error');
@@ -179,7 +262,6 @@ createTask(task: Task): void {
   this.boardsService.createTask(task.columnId, taskData).subscribe({
     next: (newTask) => {
       Swal.fire('Tarea Creada', 'La tarea se ha creado con éxito.', 'success');
-      this.loadAllTasks();  // Recarga las tareas
     },
     error: (err) => {
       Swal.fire('Error', 'Hubo un problema al crear la tarea.', 'error');
@@ -187,34 +269,37 @@ createTask(task: Task): void {
     }
   });
 }
+onDrop(event: CdkDragDrop<any[]>, column: Column): void {
+  const { previousIndex, currentIndex, previousContainer, container } = event;
 
-
-
-  drop(fromColumn: Column, toColumn: Column | null, task: Task): void {
- 
+  console.log('Índice anterior:', previousIndex);
+  console.log('Índice actual:', currentIndex);
+  console.log('Contenedor anterior:', previousContainer.id);
+  console.log('Contenedor actual:', container.id);
   
-    if (toColumn && fromColumn.id !== toColumn.id) {
-      this.moveTask(fromColumn, toColumn, task);
-      this.cdr.detectChanges(); 
-    } else {
-    }
-  }
+  // Mostrar todos los contenedores registrados
+  console.log('Contenedores conectados:', this.connectedColumns);
+  console.log('Total de contenedores:', this.connectedColumns.length);
   
-  onDrop(event: CdkDragDrop<any[]>, targetColumn: Column): void {
-    const task = event.item.data;
-    const sourceColumn = this.columns.find(col => col.tasks.includes(task)); 
+  if (previousContainer !== container) {
+    console.log('Se está moviendo entre columnas');
+    const movedTask = previousContainer.data.splice(previousIndex, 1)[0]; // Elimina la tarea de la columna anterior
+    container.data.splice(currentIndex, 0, movedTask); // Inserta la tarea en la columna de destino
 
-    if (sourceColumn && targetColumn && sourceColumn.id !== targetColumn.id) {
-      const nextColumn = this.getNextColumn(targetColumn);
-      if (nextColumn) {
-        this.moveTask(sourceColumn, nextColumn, task);
-      } else {
-        console.log("No hay columna siguiente para mover la tarea.");
-      }
-    } else {
-      console.log("Las columnas no son válidas o son iguales.");
-    }
+    console.log('Tarea movida a una nueva columna:', movedTask);
+  } else if (previousIndex !== currentIndex) {
+    console.log('Se está moviendo dentro de la misma columna');
+    const movedTask = previousContainer.data.splice(previousIndex, 1)[0]; // Elimina la tarea
+    container.data.splice(currentIndex, 0, movedTask); // Inserta la tarea en la nueva posición
+
+    console.log('Tarea movida dentro de la misma columna:', movedTask);
   }
+
+  this.cdr.detectChanges();
+}
+
+
+
   updateLocalTask(updatedTask: Task): void {
 
     const column = this.board.columns.find(col => col.id === updatedTask.columnId);
@@ -262,7 +347,6 @@ createTask(task: Task): void {
         this.boardsService.updateTask(task.id.toString(), updatedTask).subscribe({
         next: (response) => {
           console.log('Tarea actualizada:', response);
-    this.loadAllTasks();
           this.isModalOpen = false;
           this.isEditing = false;
         },
@@ -272,6 +356,7 @@ createTask(task: Task): void {
       });
     }
   }
+  
   getNextColumn(currentColumn: Column): Column | null {
     const currentIndex = this.columns.findIndex((col) => col.id === currentColumn.id);
     const nextColumn = this.columns[currentIndex + 1] || null;
@@ -307,17 +392,38 @@ createTask(task: Task): void {
     this.newColumn.name = columnName; 
     this.addColumn();
   }
-  
   getFilteredTasks(column: any): Task[] {
- 
     if (!column.tasks) {
-      return []; 
+      return [];
     }
+  
+    // Filtrar tareas de la columna
     const filteredTasks = column.tasks.filter((task: Task) => {
       const matchesName = task.title.toLowerCase().includes(this.searchQuery.toLowerCase());
       const matchesColumn = this.searchStatus ? String(task.columnId) === String(this.searchStatus) : true;
       return matchesName && matchesColumn;
     });
-    return filteredTasks; 
+  
+    return filteredTasks;
   }
+  
+  getFilteredColumns(): any[] {
+    return this.board.columns.filter(column => {
+      if (!column.tasks) return false;
+  
+      // Filtrar las tareas de cada columna
+      const filteredTasks = column.tasks.filter((task: Task) => {
+        const matchesName = task.title.toLowerCase().includes(this.searchQuery.toLowerCase());
+        const matchesColumn = this.searchStatus ? String(task.columnId) === String(this.searchStatus) : true;
+        return matchesName && matchesColumn;
+      });
+  
+      // Si quieres que la columna tenga solo las tareas filtradas:
+      column.tasks = filteredTasks;
+  
+      // Solo mostrar la columna si tiene tareas que coinciden
+      return filteredTasks.length > 0;
+    });
+  }
+  
 }

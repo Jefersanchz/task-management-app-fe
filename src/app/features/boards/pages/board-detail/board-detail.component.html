@@ -17,12 +17,9 @@
   (closeModal)="closeColumnModal()"
 ></app-column-modal>
 
-<!-- Contenido principal -->
 <div class="container mx-auto p-6">
   <div class="flex justify-between items-center mb-6  p-4">
-    <!-- Filtros a la izquierda -->
     <div class="flex justify-start space-x-4">
-      <!-- Campo de búsqueda -->
       <input
         type="text"
         class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
@@ -30,24 +27,19 @@
         [(ngModel)]="searchQuery"
       />
     
-      <!-- Dropdown dinámico -->
       <select
         class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
         [(ngModel)]="searchStatus"
       >
-        <!-- Opción por defecto -->
         <option value="">Todas las columnas</option>
     
-        <!-- Opciones generadas dinámicamente -->
         <option *ngFor="let column of columns" [value]="column.id">
           {{ column.name }}
         </option>
       </select>
     </div>
     
-    <!-- Contenedor de los botones alineados a la derecha -->
     <div class="flex justify-end space-x-4">
-      <!-- Botón Agregar Tarea -->
       <button
         class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition-all duration-200"
         title="Agregar Tarea"
@@ -56,7 +48,6 @@
         <i class="fas fa-plus-circle mr-2"></i> Agregar Tarea
       </button>
   
-      <!-- Botón Agregar Columna -->
       <button
         class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-200"
         title="Agregar Columna"
@@ -70,7 +61,6 @@
   <div class="flex justify-between items-center mb-6">
     <h2 class="text-3xl font-semibold text-gray-700">{{ board.name }}</h2>
   
-    <!-- Filtro de búsqueda -->
    
   </div>
   
@@ -83,45 +73,71 @@
     'grid-cols-5': board.columns.length >= 5,
     'grid-cols-6': board.columns.length >= 6
   }">
-  <div *ngFor="let column of board.columns" 
-       cdkDropList 
-       [cdkDropListData]="column.tasks"
-       (cdkDropListDropped)="onDrop($event, column)"  
-       class="bg-gray-50 p-4 rounded-lg h-full" style="box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);">
-    
-    <h3 class="text-xl font-semibold text-gray-700">{{ column.name }}</h3>
-    <div class="mt-4 h-full flex flex-col">
-      <!-- Usamos getFilteredTasks(column) para obtener las tareas filtradas -->
-      <div *ngFor="let task of getFilteredTasks(column)" 
-           cdkDrag 
-           class="bg-white p-3 rounded-md shadow-md mb-4">
-        <h4 class="font-medium text-gray-700">{{ task.title }}</h4>
-        <p class="text-sm text-gray-500">{{ task.description }}</p>
+<div *ngFor="let column of columns" 
+cdkDropList
+[cdkDropListData]="column.tasks"
+[cdkDropListConnectedTo]="connectedColumns"
+[id]="column.id"  
+class="bg-gray-50 p-4 rounded-lg h-full" 
+style="box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);">
 
-        <!-- Botón de Eliminar Tarea -->
-        <button
-          class="text-red-600 hover:text-red-800 p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-          (click)="deleteTask(task)"
-          title="Eliminar Tarea">
-          <i class="fas fa-trash-alt text-lg"></i>
-        </button>
+<h3 class="text-xl font-semibold text-gray-700">{{ column.name }}</h3>
 
-        <!-- Botón de Mover Tarea -->
-        <button
-        class="text-blue-600 hover:text-blue-800 p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-        (click)="moveTask(column, getNextColumn(column)!, task)" 
-        title="Mover Tarea">
-        <i class="fas fa-arrows-alt text-lg"></i>
-      </button>
-      
-        <!-- Botón de Editar Tarea -->
-        <button
-          class="text-green-600 hover:text-green-800 p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-          (click)="editTask(column, task)"
-          title="Editar Tarea">
-          <i class="fas fa-edit text-lg"></i>
-        </button>
-      </div>
-    </div>
-  </div>
+<div class="mt-4 h-full flex flex-col">
+<div *ngFor="let task of getFilteredTasks(column)" 
+ cdkDrag 
+ [cdkDragData]="task"  
+ class="bg-white p-3 rounded-md shadow-md mb-4">
+ 
+ <h4 class="font-medium text-gray-700">{{ task.title }}</h4>
+ <p class="text-sm text-gray-500">{{ task.description }}</p>
+
+ <!-- Botón Eliminar -->
+ <button
+   class="text-red-600 hover:text-red-800 p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+   (click)="deleteTask(task)"
+   title="Eliminar Tarea">
+   <i class="fas fa-trash-alt text-lg"></i>
+ </button>
+
+ <!-- Botón Editar -->
+ <button
+   class="text-green-600 hover:text-green-800 p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+   (click)="editTask(column, task)"
+   title="Editar Tarea">
+   <i class="fas fa-edit text-lg"></i>
+ </button>
+
+ <!-- Botón Mover -->
+ <button
+   class="text-blue-600 hover:text-blue-800 p-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+   (click)="promptMoveTask(column, task)"
+   title="Mover Tarea">
+   <i class="fas fa-arrows-alt text-lg"></i>
+ </button>
+</div>
+</div>
+</div>
+
+<!-- Modal para mover tarea -->
+<div *ngIf="moveTaskModalVisible" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+<div class="bg-white p-6 rounded-lg shadow-lg">
+<h3 class="text-lg font-semibold mb-4">Mover Tarea</h3>
+<p class="mb-4">Selecciona la columna a la que deseas mover la tarea:</p>
+<select [(ngModel)]="selectedColumnId" class="p-2 rounded-lg border border-gray-300 w-full">
+ <option *ngFor="let column of columns" [value]="column.id">{{ column.name }}</option>
+</select>
+<div class="mt-4 flex justify-end space-x-2">
+ <button 
+   class="bg-gray-500 text-white px-4 py-2 rounded-lg"
+   (click)="cancelMoveTask()">
+   Cancelar
+ </button>
+ <button 
+   class="bg-blue-600 text-white px-4 py-2 rounded-lg"
+   (click)="confirmMoveTask()">
+   Mover
+ </button>
+</div>
+</div>
 </div>
