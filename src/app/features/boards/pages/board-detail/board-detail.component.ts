@@ -247,28 +247,35 @@ connectedColumns: string[] = []; // Aquí guardaremos los valores de conexión d
   }
   
   
-  
-createTask(task: Task): void {
-  if (!task.title || !task.description || !task.columnId) {
-    Swal.fire('Error', 'Por favor, ingresa un título, una descripción y selecciona una columna para la tarea.', 'error');
-    return;
-  }
-
-  const taskData = { 
-    title: task.title, 
-    description: task.description 
-  };
-
-  this.boardsService.createTask(task.columnId, taskData).subscribe({
-    next: (newTask) => {
-      Swal.fire('Tarea Creada', 'La tarea se ha creado con éxito.', 'success');
-    },
-    error: (err) => {
-      Swal.fire('Error', 'Hubo un problema al crear la tarea.', 'error');
-      console.error('Error al crear tarea:', err);
+  createTask(task: Task): void {
+    if (!task.title || !task.description || !task.columnId) {
+      Swal.fire('Error', 'Por favor, ingresa un título, una descripción y selecciona una columna para la tarea.', 'error');
+      return;
     }
-  });
-}
+  
+    const taskData = { 
+      title: task.title, 
+      description: task.description 
+    };
+  
+    this.boardsService.createTask(task.columnId, taskData).subscribe({
+      next: (newTask) => {
+        Swal.fire('Tarea Creada', 'La tarea se ha creado con éxito.', 'success');
+  
+        // Llamar a loadColumns después de crear la tarea
+        const boardId = this.route.snapshot.paramMap.get('id'); // Obtén el boardId de la URL
+        if (boardId) {
+          this.loadColumns(boardId); // Pasa el boardId a loadColumns
+        }
+  
+      },
+      error: (err) => {
+        Swal.fire('Error', 'Hubo un problema al crear la tarea.', 'error');
+        console.error('Error al crear tarea:', err);
+      }
+    });
+  }
+  
 onDrop(event: CdkDragDrop<any[]>, column: Column): void {
   const { previousIndex, currentIndex, previousContainer, container } = event;
 
@@ -379,15 +386,27 @@ onDrop(event: CdkDragDrop<any[]>, column: Column): void {
         if (!this.board.columns) {
           this.board.columns = [];
         }
-          this.newColumn.position = this.board.columns.length;
   
+        this.newColumn.position = this.board.columns.length;
+  
+        // Crear la columna en el backend
         this.boardsService.createColumn(boardId, this.newColumn).subscribe((newColumn: Column) => {
-          this.board.columns.push(newColumn); 
-          this.closeColumnModal(); 
+          // Añadir la nueva columna a la lista de columnas localmente
+          this.board.columns.push(newColumn);
+          
+          // Cerrar el modal de la nueva columna
+          this.closeColumnModal();
+  
+          // Llamar a loadColumns para recargar las columnas, si es necesario
+          this.loadColumns(boardId);
+        }, (error) => {
+          console.error('Error al crear la columna:', error);
+          Swal.fire('Error', 'Hubo un problema al crear la columna.', 'error');
         });
       }
     }
   }
+  
   handleColumnCreated(columnName: string) {
     this.newColumn.name = columnName; 
     this.addColumn();
